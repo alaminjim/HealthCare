@@ -1,6 +1,7 @@
 import app from "./app";
+import { envConfig } from "./app/config/env";
 
-const port = process.env.PORT || 5000;
+const port = envConfig.PORT || 5000;
 
 const server = () => {
   try {
