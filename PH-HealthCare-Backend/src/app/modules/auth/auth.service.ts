@@ -28,21 +28,29 @@ const authRegister = async (payload: IRegister) => {
     throw new Error("User Created failed");
   }
 
-  const patient = await prisma.$transaction(async (tx) => {
-    const patientTx = await tx.patient.create({
-      data: {
-        userId: data.user.id,
-        name: payload.name,
-        email: payload.email,
+  try {
+    const patient = await prisma.$transaction(async (tx) => {
+      const patientTx = await tx.patient.create({
+        data: {
+          userId: data.user.id,
+          name: payload.name,
+          email: payload.email,
+        },
+      });
+      return patientTx;
+    });
+    return {
+      ...data,
+      patient,
+    };
+  } catch (error) {
+    await prisma.user.delete({
+      where: {
+        id: data.user.id,
       },
     });
-    return patientTx;
-  });
-
-  return {
-    ...data,
-    patient,
-  };
+    console.log(error);
+  }
 };
 
 const authLogin = async (payload: ILogin) => {
