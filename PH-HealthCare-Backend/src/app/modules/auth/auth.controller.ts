@@ -11,7 +11,9 @@ const authRegister = catchFn(async (req: Request, res: Response) => {
 const authLogin = catchFn(async (req: Request, res: Response) => {
   const payload = req.body;
   const result = await authService.authLogin(payload);
-  res.status(201).json({ success: true, data: result });
+  res
+    .status(201)
+    .json({ success: true, data: result, message: "Login successful" });
 });
 
 export const authController = {
