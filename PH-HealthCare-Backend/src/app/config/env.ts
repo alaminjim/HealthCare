@@ -1,4 +1,6 @@
 import dotenv from "dotenv";
+import AppError from "../../errorHelper/appError";
+import { StatusCodes } from "http-status-codes";
 
 dotenv.config();
 
@@ -21,7 +23,10 @@ const envVariables = (): EnvConfig => {
 
   requireEnv.forEach((variable) => {
     if (!process.env[variable]) {
-      throw new Error(`Missing environment variable: ${variable}`);
+      throw new AppError(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        `Missing environment variable: ${variable}`
+      );
     }
   });
 

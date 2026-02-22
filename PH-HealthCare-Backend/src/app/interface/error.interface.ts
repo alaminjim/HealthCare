@@ -9,4 +9,5 @@ export interface TErrorResponse {
   errorSources?: IError[];
   error?: unknown;
   statusCode: number;
+  stack?: string | undefined;
 }
