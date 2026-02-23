@@ -10,6 +10,10 @@ interface EnvConfig {
   DATABASE_URL: string;
   BETTER_AUTH_SECRET: string;
   BETTER_AUTH_URL: string;
+  ACCESS_TOKEN: string;
+  REFRESH_TOKEN: string;
+  ACCESS_TOKEN_IN: string;
+  REFRESH_TOKEN_IN: string;
 }
 
 const envVariables = (): EnvConfig => {
@@ -25,7 +29,7 @@ const envVariables = (): EnvConfig => {
     if (!process.env[variable]) {
       throw new AppError(
         StatusCodes.INTERNAL_SERVER_ERROR,
-        `Missing environment variable: ${variable}`
+        `Missing environment variable: ${variable}`,
       );
     }
   });
@@ -36,6 +40,10 @@ const envVariables = (): EnvConfig => {
     DATABASE_URL: process.env.DATABASE_URL as string,
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET as string,
     BETTER_AUTH_URL: process.env.BETTER_AUTH_URL as string,
+    ACCESS_TOKEN: process.env.ACCESS_TOKEN as string,
+    REFRESH_TOKEN: process.env.REFRESH_TOKEN as string,
+    ACCESS_TOKEN_IN: process.env.ACCESS_TOKEN_IN as string,
+    REFRESH_TOKEN_IN: process.env.REFRESH_TOKEN_IN as string,
   };
 };
 
