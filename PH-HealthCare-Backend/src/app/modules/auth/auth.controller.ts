@@ -2,41 +2,48 @@ import { Request, Response } from "express";
 import catchFn from "../../shared/catchFn";
 import { authService } from "./auth.service";
 import { StatusCodes } from "http-status-codes";
-import { tokenUtils } from "../../utils/token";
+import { setCookieUtils } from "../../utils/cookiesSet";
 
 const authRegister = catchFn(async (req: Request, res: Response) => {
   const payload = req.body;
   const result = await authService.authRegister(payload);
 
-  const { accessToken, refreshToken, token, ...rest } = result;
+  const { refreshToken, accessToken, token, ...spread } = result;
 
-  tokenUtils.setAccessToken(res, accessToken);
-  tokenUtils.setRefreshToken(res, refreshToken);
-  tokenUtils.setBetterAuth(res, token as string);
+  console.log(spread);
+
+  setCookieUtils.setAccessToken(res, accessToken);
+  setCookieUtils.setRefreshToken(res, refreshToken);
+  setCookieUtils.setBetterAuthToken(res, token as string);
 
   res.status(StatusCodes.OK).json({
     success: true,
-    data: { accessToken, refreshToken, token, ...rest },
+    data: {
+      accessToken,
+      refreshToken,
+      token,
+      ...spread,
+    },
   });
 });
 
 const authLogin = catchFn(async (req: Request, res: Response) => {
   const payload = req.body;
-  const result = await authService.authLogin(payload);
+  const authLogin = await authService.authLogin(payload);
 
-  const { accessToken, refreshToken, token, ...rest } = result;
+  const { refreshToken, accessToken, token, ...spread } = authLogin;
 
-  tokenUtils.setAccessToken(res, accessToken);
-  tokenUtils.setRefreshToken(res, refreshToken);
-  tokenUtils.setBetterAuth(res, token as string);
+  setCookieUtils.setAccessToken(res, accessToken);
+  setCookieUtils.setRefreshToken(res, refreshToken);
+  setCookieUtils.setBetterAuthToken(res, token);
 
   res.status(StatusCodes.OK).json({
     success: true,
     data: {
-      token,
       accessToken,
       refreshToken,
-      ...rest,
+      token,
+      ...spread,
     },
     message: "Login successful",
   });

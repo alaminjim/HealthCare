@@ -1,0 +1,38 @@
+import { Response } from "express";
+import { cookieUtils } from "./cookie";
+
+const setAccessToken = (res: Response, token: string) => {
+  cookieUtils.setCookies(res, "accessToken", token, {
+    httpOnly: true,
+    sameSite: "none",
+    secure: true,
+    path: "/",
+    maxAge: 60 * 60 * 60 * 24,
+  });
+};
+
+const setRefreshToken = (res: Response, token: string) => {
+  cookieUtils.setCookies(res, "refreshToken", token, {
+    httpOnly: true,
+    sameSite: "none",
+    secure: true,
+    path: "/",
+    maxAge: 60 * 60 * 60 * 24 * 7,
+  });
+};
+
+const setBetterAuthToken = (res: Response, token: string) => {
+  cookieUtils.setCookies(res, "better-auth.session_token", token, {
+    httpOnly: true,
+    sameSite: "none",
+    secure: true,
+    path: "/",
+    maxAge: 60 * 60 * 60 * 24,
+  });
+};
+
+export const setCookieUtils = {
+  setAccessToken,
+  setRefreshToken,
+  setBetterAuthToken,
+};

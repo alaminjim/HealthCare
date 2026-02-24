@@ -1,11 +1,11 @@
 import { Router } from "express";
 import { doctorController } from "./doctor.controller";
-import { checkAuth } from "../../middleware/auth";
+import { authMiddleware } from "../../middleware/auth";
 import { Role } from "../../../generated/prisma/enums";
 
 const route = Router();
 
-route.get("/", checkAuth(Role.PATIENT), doctorController.getAllDoctor);
+route.get("/", authMiddleware(Role.PATIENT), doctorController.getAllDoctor);
 
 route.get("/:id", doctorController.getDoctorById);
 

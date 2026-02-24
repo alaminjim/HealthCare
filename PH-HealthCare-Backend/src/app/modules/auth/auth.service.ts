@@ -41,7 +41,7 @@ const authRegister = async (payload: IRegister) => {
       return patientTx;
     });
 
-    const accessToken = tokenUtils.getAccessToken({
+    const accessToken = tokenUtils.accessToken({
       userId: data.user.id,
       name: data.user.name,
       email: data.user.email,
@@ -51,7 +51,7 @@ const authRegister = async (payload: IRegister) => {
       isDeleted: data.user.isDeleted,
     });
 
-    const refreshToken = tokenUtils.getRefreshToken({
+    const refreshToken = tokenUtils.refreshToken({
       userId: data.user.id,
       name: data.user.name,
       email: data.user.email,
@@ -64,8 +64,8 @@ const authRegister = async (payload: IRegister) => {
     return {
       ...data,
       patient,
-      refreshToken,
       accessToken,
+      refreshToken,
     };
   } catch (error) {
     await prisma.user.delete({
@@ -95,7 +95,7 @@ const authLogin = async (payload: ILogin) => {
     throw new Error("User Deleted");
   }
 
-  const accessToken = tokenUtils.getAccessToken({
+  const accessToken = tokenUtils.accessToken({
     userId: data.user.id,
     name: data.user.name,
     email: data.user.email,
@@ -105,7 +105,7 @@ const authLogin = async (payload: ILogin) => {
     isDeleted: data.user.isDeleted,
   });
 
-  const refreshToken = tokenUtils.getRefreshToken({
+  const refreshToken = tokenUtils.refreshToken({
     userId: data.user.id,
     name: data.user.name,
     email: data.user.email,
