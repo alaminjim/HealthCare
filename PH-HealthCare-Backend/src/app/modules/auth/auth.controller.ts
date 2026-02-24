@@ -10,8 +10,6 @@ const authRegister = catchFn(async (req: Request, res: Response) => {
 
   const { refreshToken, accessToken, token, ...spread } = result;
 
-  console.log(spread);
-
   setCookieUtils.setAccessToken(res, accessToken);
   setCookieUtils.setRefreshToken(res, refreshToken);
   setCookieUtils.setBetterAuthToken(res, token as string);
