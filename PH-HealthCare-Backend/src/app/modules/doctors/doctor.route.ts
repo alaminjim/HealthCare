@@ -18,6 +18,10 @@ route.patch(
   doctorController.updateDoctor,
 );
 
-route.delete("/:id", authMiddleware(), doctorController.deleteDoctor);
+route.delete(
+  "/:id",
+  authMiddleware(Role.ADMIN, Role.SUPER_ADMIN),
+  doctorController.deleteDoctor,
+);
 
 export const doctorRoute = route;

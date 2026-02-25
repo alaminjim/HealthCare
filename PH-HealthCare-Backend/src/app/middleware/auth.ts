@@ -17,51 +17,55 @@ export const authMiddleware =
       );
 
       if (!sessionToken) {
-        throw new Error("Unauthorized access! No session token provided.");
+        throw new AppError(
+          StatusCodes.UNAUTHORIZED,
+          "Unauthorized access! No session token provided.",
+        );
       }
 
-      let user;
-
-      if (sessionToken) {
-        const sessionTokenExists = await prisma.session.findFirst({
-          where: {
-            token: sessionToken,
-            expiresAt: {
-              gt: new Date(),
-            },
+      const sessionTokenExists = await prisma.session.findFirst({
+        where: {
+          token: sessionToken,
+          expiresAt: {
+            gt: new Date(),
           },
-          include: {
-            user: true,
-          },
-        });
+        },
+        include: {
+          user: true,
+        },
+      });
 
-        if (sessionTokenExists && sessionTokenExists.user) {
-          user = sessionTokenExists.user;
+      if (!sessionTokenExists || !sessionTokenExists.user) {
+        throw new AppError(
+          StatusCodes.UNAUTHORIZED,
+          "Unauthorized access! Invalid session.",
+        );
+      }
 
-          if (
-            user.status === UserStatus.BLOCKED ||
-            user.status === UserStatus.DELETED
-          ) {
-            throw new AppError(
-              StatusCodes.UNAUTHORIZED,
-              "Unauthorized access! User is not active.",
-            );
-          }
+      const user = sessionTokenExists.user;
 
-          if (user.isDeleted) {
-            throw new AppError(
-              StatusCodes.UNAUTHORIZED,
-              "Unauthorized access! User is deleted.",
-            );
-          }
+      if (
+        user.status === UserStatus.BLOCKED ||
+        user.status === UserStatus.DELETED
+      ) {
+        throw new AppError(
+          StatusCodes.UNAUTHORIZED,
+          "Unauthorized access! User is not active.",
+        );
+      }
 
-          if (userRole.length > 0 && !userRole.includes(user.role)) {
-            throw new AppError(
-              StatusCodes.FORBIDDEN,
-              "Forbidden access! You do not have permission to access this resource.",
-            );
-          }
-        }
+      if (user.isDeleted) {
+        throw new AppError(
+          StatusCodes.UNAUTHORIZED,
+          "Unauthorized access! User is deleted.",
+        );
+      }
+
+      if (userRole.length > 0 && !userRole.includes(user.role)) {
+        throw new AppError(
+          StatusCodes.FORBIDDEN,
+          "Forbidden access! You do not have permission to access this resource.",
+        );
       }
 
       const accessToken = cookieUtils.getCookies(req, "accessToken");
@@ -95,14 +99,11 @@ export const authMiddleware =
         );
       }
 
-      if (!user) {
-        throw new AppError(
-          StatusCodes.UNAUTHORIZED,
-          "Unauthorized access! User not found.",
-        );
-      }
-
-      req.user = user;
+      req.user = {
+        userId: user.id,
+        role: user.role,
+        email: user.email,
+      };
 
       next();
     } catch (error) {

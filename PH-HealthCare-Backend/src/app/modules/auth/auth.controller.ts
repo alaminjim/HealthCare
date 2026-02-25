@@ -47,7 +47,14 @@ const authLogin = catchFn(async (req: Request, res: Response) => {
   });
 });
 
+const authMe = catchFn(async (req: Request, res: Response) => {
+  const user = req.user;
+  const result = await authService.authMe(user);
+  res.status(StatusCodes.OK).json({ success: true, data: result });
+});
+
 export const authController = {
   authRegister,
   authLogin,
+  authMe,
 };

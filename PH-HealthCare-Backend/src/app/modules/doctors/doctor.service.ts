@@ -157,15 +157,41 @@ const deleteDoctor = async (id: string) => {
     throw new Error("Doctor is already deleted");
   }
 
-  const result = await prisma.doctor.update({
-    where: { id },
-    data: {
-      isDeleted: true,
-      deletedAt: new Date(),
-    },
+  await prisma.$transaction(async (tx) => {
+    await tx.doctor.update({
+      where: {
+        id,
+      },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(),
+      },
+    });
+
+    await tx.user.update({
+      where: {
+        id: doctor.userId,
+      },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(),
+      },
+    });
+
+    await tx.session.deleteMany({
+      where: {
+        id: doctor.userId,
+      },
+    });
+
+    await tx.doctorSpecialty.deleteMany({
+      where: {
+        doctorId: id,
+      },
+    });
   });
 
-  return result;
+  return { message: "Deleted Successful" };
 };
 
 export const doctorService = {
