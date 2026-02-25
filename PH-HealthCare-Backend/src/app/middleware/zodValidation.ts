@@ -10,6 +10,6 @@ export const zodValidation = (zodSchema: z.ZodTypeAny) => {
     }
 
     req.body = parseResult.data;
-    next();
+    return next();
   };
 };

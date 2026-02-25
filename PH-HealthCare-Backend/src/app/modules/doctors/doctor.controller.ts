@@ -15,7 +15,25 @@ const getDoctorById = catchFn(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json({ success: true, data: result });
 });
 
+const updateDoctor = catchFn(async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const payload = req.body;
+  console.log(payload);
+  const result = await doctorService.updateDoctor(payload, id as string);
+  res.status(StatusCodes.OK).json({ success: true, data: result });
+});
+
+const deleteDoctor = catchFn(async (req: Request, res: Response) => {
+  const id = req.params.id;
+  await doctorService.deleteDoctor(id as string);
+  res
+    .status(StatusCodes.OK)
+    .json({ success: true, message: "Deleted SuccessFul", data: null });
+});
+
 export const doctorController = {
   getAllDoctor,
   getDoctorById,
+  updateDoctor,
+  deleteDoctor,
 };
