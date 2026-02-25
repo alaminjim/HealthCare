@@ -5,6 +5,9 @@ import { IRequestUser } from "../../interface/requestUser.interface";
 import { auth } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
 import { tokenUtils } from "../../utils/token";
+import { jwtUtils } from "../../utils/jwt";
+import { envConfig } from "../../config/env";
+import { JwtPayload } from "jsonwebtoken";
 
 type IRegister = {
   name: string;
@@ -158,8 +161,71 @@ const authMe = async (user: IRequestUser) => {
   return userExists;
 };
 
+const getNewToken = async (refreshToken: string, sessionToken: string) => {
+  const sessionTokenExists = await prisma.session.findUnique({
+    where: {
+      token: sessionToken,
+    },
+  });
+
+  if (!sessionTokenExists) {
+    throw new AppError(StatusCodes.UNAUTHORIZED, "Invalid session token");
+  }
+
+  const verifiedRefreshToken = await jwtUtils.verifiedToken(
+    refreshToken,
+    envConfig.REFRESH_TOKEN,
+  );
+
+  if (!verifiedRefreshToken.success) {
+    throw new AppError(StatusCodes.UNAUTHORIZED, "Invalid refresh token");
+  }
+
+  const data = verifiedRefreshToken as JwtPayload;
+
+  console.log(data);
+
+  const newAccessToken = tokenUtils.accessToken({
+    userId: data.id,
+    name: data.name,
+    email: data.email,
+    emailVerified: data.emailVerified,
+    role: data.role,
+    status: data.status,
+    isDeleted: data.isDeleted,
+  });
+
+  const newRefreshToken = tokenUtils.refreshToken({
+    userId: data.id,
+    name: data.name,
+    email: data.email,
+    emailVerified: data.emailVerified,
+    role: data.role,
+    status: data.status,
+    isDeleted: data.isDeleted,
+  });
+
+  const { token } = await prisma.session.update({
+    where: {
+      token: sessionToken,
+    },
+    data: {
+      token: sessionToken,
+      expiresAt: new Date(Date.now() + 60 * 60 * 60 * 24 * 1000),
+      updatedAt: new Date(),
+    },
+  });
+
+  return {
+    accessToken: newAccessToken,
+    refreshToken: newRefreshToken,
+    sessionToken: token,
+  };
+};
+
 export const authService = {
   authRegister,
   authLogin,
   authMe,
+  getNewToken,
 };

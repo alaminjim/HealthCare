@@ -3,6 +3,7 @@ import catchFn from "../../shared/catchFn";
 import { authService } from "./auth.service";
 import { StatusCodes } from "http-status-codes";
 import { setCookieUtils } from "../../utils/cookiesSet";
+import AppError from "../../../errorHelper/appError";
 
 const authRegister = catchFn(async (req: Request, res: Response) => {
   const payload = req.body;
@@ -53,8 +54,33 @@ const authMe = catchFn(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json({ success: true, data: result });
 });
 
+const getNewToken = catchFn(async (req: Request, res: Response) => {
+  const refreshToken = req.cookies.refreshToken;
+  const betterAuthSessionToken = req.cookies["better-auth.session_token"];
+
+  if (!refreshToken) {
+    throw new AppError(StatusCodes.UNAUTHORIZED, "Refresh token is missing");
+  }
+
+  const result = await authService.getNewToken(
+    refreshToken,
+    betterAuthSessionToken,
+  );
+
+  const { accessToken, refreshToken: newRefreshToken, sessionToken } = result;
+  setCookieUtils.setAccessToken(res, accessToken);
+  setCookieUtils.setRefreshToken(res, newRefreshToken);
+  setCookieUtils.setBetterAuthToken(res, sessionToken);
+
+  res.status(StatusCodes.CREATED).json({
+    success: true,
+    data: { accessToken, refreshToken: newRefreshToken, sessionToken },
+  });
+});
+
 export const authController = {
   authRegister,
   authLogin,
   authMe,
+  getNewToken,
 };
