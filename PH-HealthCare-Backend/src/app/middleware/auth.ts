@@ -1,11 +1,11 @@
-import { NextFunction, Request, Response } from "express";
-import { cookieUtils } from "../utils/cookie";
-import { prisma } from "../lib/prisma";
-import { Role, UserStatus } from "../../generated/prisma/enums";
 import { StatusCodes } from "http-status-codes";
 import AppError from "../../errorHelper/appError";
-import { jwtUtils } from "../utils/jwt";
+import { Role, UserStatus } from "../../generated/prisma/enums";
 import { envConfig } from "../config/env";
+import { jwtUtils } from "../utils/jwt";
+import { cookieUtils } from "../utils/cookie";
+import { NextFunction, Request, Response } from "express";
+import { prisma } from "../lib/prisma";
 
 export const authMiddleware =
   (...userRole: Role[]) =>
@@ -19,6 +19,8 @@ export const authMiddleware =
       if (!sessionToken) {
         throw new Error("Unauthorized access! No session token provided.");
       }
+
+      let user;
 
       if (sessionToken) {
         const sessionTokenExists = await prisma.session.findFirst({
@@ -34,7 +36,8 @@ export const authMiddleware =
         });
 
         if (sessionTokenExists && sessionTokenExists.user) {
-          const user = sessionTokenExists.user;
+          user = sessionTokenExists.user;
+
           if (
             user.status === UserStatus.BLOCKED ||
             user.status === UserStatus.DELETED
@@ -91,6 +94,15 @@ export const authMiddleware =
           "Forbidden access! You do not have permission to access this resource.",
         );
       }
+
+      if (!user) {
+        throw new AppError(
+          StatusCodes.UNAUTHORIZED,
+          "Unauthorized access! User not found.",
+        );
+      }
+
+      req.user = user;
 
       next();
     } catch (error) {

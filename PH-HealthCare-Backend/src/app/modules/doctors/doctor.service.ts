@@ -157,11 +157,15 @@ const deleteDoctor = async (id: string) => {
     throw new Error("Doctor is already deleted");
   }
 
-  return await prisma.doctor.delete({
-    where: {
-      id,
+  const result = await prisma.doctor.update({
+    where: { id },
+    data: {
+      isDeleted: true,
+      deletedAt: new Date(),
     },
   });
+
+  return result;
 };
 
 export const doctorService = {
