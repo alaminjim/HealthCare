@@ -1,5 +1,5 @@
 import z from "zod";
-import { Gender } from "../../../generated/prisma/enums";
+import { Gender, Role } from "../../../generated/prisma/enums";
 
 export const createDoctorZodSchema = z.object({
   password: z
@@ -59,4 +59,36 @@ export const createDoctorZodSchema = z.object({
   specialties: z
     .array(z.uuid(), "Specialties must be an array of strings")
     .min(1, "At least one specialty is required"),
+});
+
+export const createAdminZodSchema = z.object({
+  password: z.string().min(8, "Password must be at least 6 characters"),
+  admin: z.object({
+    name: z.string().min(1, "Name is Required"),
+    email: z.email("Invalid email format"),
+    profilePhoto: z.url("Invalid url format").optional(),
+    description: z.string("description invalid").optional(),
+    contactNumber: z
+      .string("Contact number is required")
+      .min(11, "Contact number must be at least 11 characters")
+      .max(14, "Contact number must be at most 15 characters")
+      .optional(),
+    role: z.enum(Role),
+  }),
+});
+
+export const createSuperAdminZodSchema = z.object({
+  password: z.string().min(8, "Password must be at least 6 characters"),
+  superAdmin: z.object({
+    name: z.string().min(1, "Name is Required"),
+    email: z.email("Invalid email format"),
+    profilePhoto: z.url("Invalid url format").optional(),
+    description: z.string("description invalid").optional(),
+    contactNumber: z
+      .string("Contact number is required")
+      .min(11, "Contact number must be at least 11 characters")
+      .max(14, "Contact number must be at most 15 characters")
+      .optional(),
+    role: z.enum(Role),
+  }),
 });
