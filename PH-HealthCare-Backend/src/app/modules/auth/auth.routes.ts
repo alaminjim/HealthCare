@@ -21,5 +21,10 @@ router.post(
   authMiddleware(Role.ADMIN, Role.DOCTOR, Role.PATIENT, Role.SUPER_ADMIN),
   authController.changePassword,
 );
+router.post(
+  "/logout",
+  authMiddleware(Role.ADMIN, Role.DOCTOR, Role.PATIENT, Role.SUPER_ADMIN),
+  authController.logOut,
+);
 
 export const authRoute = router;
