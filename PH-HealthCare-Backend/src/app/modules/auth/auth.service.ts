@@ -20,6 +20,11 @@ type ILogin = {
   password: string;
 };
 
+interface IChangedPass {
+  currentPassword: string;
+  newPassword: string;
+}
+
 const authRegister = async (payload: IRegister) => {
   const { name, email, password } = payload;
 
@@ -166,6 +171,9 @@ const getNewToken = async (refreshToken: string, sessionToken: string) => {
     where: {
       token: sessionToken,
     },
+    include: {
+      user: true,
+    },
   });
 
   if (!sessionTokenExists) {
@@ -182,8 +190,6 @@ const getNewToken = async (refreshToken: string, sessionToken: string) => {
   }
 
   const data = verifiedRefreshToken as JwtPayload;
-
-  console.log(data);
 
   const newAccessToken = tokenUtils.accessToken({
     userId: data.id,
@@ -217,9 +223,69 @@ const getNewToken = async (refreshToken: string, sessionToken: string) => {
   });
 
   return {
-    accessToken: newAccessToken,
-    refreshToken: newRefreshToken,
-    sessionToken: token,
+    newAccessToken,
+    newRefreshToken,
+    token,
+  };
+};
+
+const changePassword = async (payload: IChangedPass, sessionToken: string) => {
+  const session = await auth.api.getSession({
+    headers: new Headers({
+      Authorization: `Bearer ${sessionToken}`,
+    }),
+  });
+  if (!session) {
+    throw new Error("Invalid Session Token");
+  }
+
+  const { currentPassword, newPassword } = payload;
+
+  const result = await auth.api.changePassword({
+    body: {
+      currentPassword,
+      newPassword,
+      revokeOtherSessions: true,
+    },
+    headers: new Headers({
+      Authorization: `Bearer ${sessionToken}`,
+    }),
+  });
+
+  if (session.user.needPasswordChange) {
+    await prisma.user.update({
+      where: {
+        id: session.user.id,
+      },
+      data: {
+        needPasswordChange: false,
+      },
+    });
+  }
+
+  const accessToken = tokenUtils.accessToken({
+    userId: session.user.id,
+    role: session.user.role,
+    name: session.user.name,
+    email: session.user.email,
+    status: session.user.status,
+    isDeleted: session.user.isDeleted,
+    emailVerified: session.user.emailVerified,
+  });
+
+  const refreshToken = tokenUtils.refreshToken({
+    userId: session.user.id,
+    role: session.user.role,
+    name: session.user.name,
+    email: session.user.email,
+    status: session.user.status,
+    isDeleted: session.user.isDeleted,
+    emailVerified: session.user.emailVerified,
+  });
+  return {
+    ...result,
+    accessToken,
+    refreshToken,
   };
 };
 
@@ -228,4 +294,5 @@ export const authService = {
   authLogin,
   authMe,
   getNewToken,
+  changePassword,
 };

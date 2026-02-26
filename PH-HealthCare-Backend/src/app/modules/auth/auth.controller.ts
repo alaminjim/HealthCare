@@ -67,14 +67,34 @@ const getNewToken = catchFn(async (req: Request, res: Response) => {
     betterAuthSessionToken,
   );
 
-  const { accessToken, refreshToken: newRefreshToken, sessionToken } = result;
-  setCookieUtils.setAccessToken(res, accessToken);
+  const { newAccessToken, newRefreshToken, token } = result;
+
+  setCookieUtils.setAccessToken(res, newAccessToken);
   setCookieUtils.setRefreshToken(res, newRefreshToken);
-  setCookieUtils.setBetterAuthToken(res, sessionToken);
+  setCookieUtils.setBetterAuthToken(res, token);
 
   res.status(StatusCodes.CREATED).json({
     success: true,
-    data: { accessToken, refreshToken: newRefreshToken, sessionToken },
+    data: { newAccessToken, newRefreshToken, token },
+  });
+});
+
+const changePassword = catchFn(async (req: Request, res: Response) => {
+  const payload = req.body;
+  const sessionToken = req.cookies["better-auth.session_token"];
+
+  const result = await authService.changePassword(payload, sessionToken);
+
+  const { accessToken, refreshToken, token } = result;
+
+  setCookieUtils.setAccessToken(res, accessToken);
+  setCookieUtils.setRefreshToken(res, refreshToken);
+  setCookieUtils.setBetterAuthToken(res, token as string);
+
+  res.status(StatusCodes.CREATED).json({
+    success: true,
+    message: "Password Change SuccessFul",
+    data: result,
   });
 });
 
@@ -83,4 +103,5 @@ export const authController = {
   authLogin,
   authMe,
   getNewToken,
+  changePassword,
 };

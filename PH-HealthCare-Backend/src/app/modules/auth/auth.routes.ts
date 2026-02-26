@@ -16,5 +16,10 @@ router.get(
 );
 
 router.post("/refresh-token", authController.getNewToken);
+router.post(
+  "/change-password",
+  authMiddleware(Role.ADMIN, Role.DOCTOR, Role.PATIENT, Role.SUPER_ADMIN),
+  authController.changePassword,
+);
 
 export const authRoute = router;

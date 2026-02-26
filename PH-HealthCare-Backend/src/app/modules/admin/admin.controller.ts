@@ -2,7 +2,6 @@ import { StatusCodes } from "http-status-codes";
 import catchFn from "../../shared/catchFn";
 import { adminService } from "./admin.service";
 import { Request, Response } from "express";
-import { IRequestUser } from "../../interface/requestUser.interface";
 
 const getAllAdmin = catchFn(async (req: Request, res: Response) => {
   const result = await adminService.getAllAdmin();
@@ -31,13 +30,7 @@ const deleteAdmin = catchFn(async (req: Request, res: Response) => {
     throw new Error("User not authenticated");
   }
 
-  const requestUser: IRequestUser = {
-    userId: user.id,
-    role: user.role,
-    email: user.email,
-  };
-
-  const result = await adminService.adminDeleted(id as string, requestUser);
+  const result = await adminService.adminDeleted(id as string, user);
   res.status(StatusCodes.OK).json({ success: true, data: result });
 });
 
