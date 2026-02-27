@@ -20,7 +20,7 @@
             headers: {
               "Content-Type": "application/json",
             },
-            credentials: true,
+            credentials: "include",
             body: JSON.stringify({
               provider: "google",
               callbackURL: "<%= callbackURL %>",

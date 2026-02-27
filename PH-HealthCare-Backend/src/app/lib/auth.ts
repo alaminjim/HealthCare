@@ -111,7 +111,6 @@ export const auth = betterAuth({
           needPasswordChange: false,
           emailVerified: true,
           isDeleted: false,
-          deletedAt: null,
         };
       },
     },
@@ -125,6 +124,15 @@ export const auth = betterAuth({
       maxAge: 60 * 60 * 60 * 24,
     },
   },
+
+  redirectURLs: {
+    signIn: `${envConfig.BETTER_AUTH_URL}/api/v1/auth/google/success`,
+  },
+
+  trustedOrigins: [
+    process.env.BETTER_AUTH_URL || "http://localhost:5000",
+    envConfig.FRONTEND_URL,
+  ],
 
   advanced: {
     useSecureCookies: false,

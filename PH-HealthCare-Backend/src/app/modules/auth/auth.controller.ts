@@ -159,7 +159,7 @@ const resetPassword = catchFn(async (req: Request, res: Response) => {
 });
 
 const googleLogin = catchFn(async (req: Request, res: Response) => {
-  const redirectPath = req.query.redirect || "/";
+  const redirectPath = req.query.redirect || "/dashboard";
 
   const encodedRedirect = encodeURIComponent(redirectPath as string);
 
@@ -172,32 +172,28 @@ const googleLogin = catchFn(async (req: Request, res: Response) => {
 });
 
 const googleLoginSuccess = catchFn(async (req: Request, res: Response) => {
-  const redirectPath = (req.query.redirect as string) || "/";
+  const redirectPath = (req.query.redirect as string) || "/dashboard";
 
   const sessionToken = req.cookies["better-auth.session_token"];
 
   if (!sessionToken) {
-    return res.redirect(
-      `${envConfig.BETTER_AUTH_URL}/login?error=oAuth-failed`,
-    );
+    return res.redirect(`${envConfig.FRONTEND_URL}/login?error=oAuth-failed`);
   }
 
   const session = await auth.api.getSession({
     headers: {
-      Cookie: `better-auth.session_auth=${sessionToken}`,
+      Cookie: `better-auth.session_token=${sessionToken}`,
     },
   });
 
   if (!session) {
     return res.redirect(
-      `${envConfig.BETTER_AUTH_URL}/login?error=session_not_found`,
+      `${envConfig.FRONTEND_URL}/login?error=session_not_found`,
     );
   }
 
   if (session && !session.user) {
-    return res.redirect(
-      `${envConfig.BETTER_AUTH_URL}/login?error=user_not_found`,
-    );
+    return res.redirect(`${envConfig.FRONTEND_URL}/login?error=user_not_found`);
   }
 
   const result = await authService.googleLoginSuccess(session);
@@ -210,9 +206,15 @@ const googleLoginSuccess = catchFn(async (req: Request, res: Response) => {
   const isValidRedirectPath =
     redirectPath.startsWith("/") && !redirectPath.startsWith("//");
 
-  const finalPath = isValidRedirectPath ? redirectPath : "/";
+  const finalPath = isValidRedirectPath ? redirectPath : "/dashboard";
 
-  res.redirect(`${envConfig.BETTER_AUTH_URL}${finalPath}`);
+  res.redirect(`${envConfig.FRONTEND_URL}${finalPath}`);
+});
+
+const handleOAuthError = catchFn(async (req: Request, res: Response) => {
+  const error = (req.query.error as string) || "Oauth_field";
+
+  res.redirect(`${envConfig.FRONTEND_URL}/login?error=${error}`);
 });
 
 export const authController = {
@@ -227,4 +229,5 @@ export const authController = {
   resetPassword,
   googleLogin,
   googleLoginSuccess,
+  handleOAuthError,
 };
