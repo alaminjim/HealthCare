@@ -3,8 +3,12 @@ import { indexRouter } from "./app/routes";
 import errorHandler from "./app/middleware/errorHandler";
 import notFound from "./app/middleware/notFound";
 import cookieParser from "cookie-parser";
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./app/lib/auth";
 
 const app: Application = express();
+
+app.use("/api/auth", toNodeHandler(auth));
 
 app.use(express.urlencoded({ extended: true }));
 
