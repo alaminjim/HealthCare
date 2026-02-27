@@ -26,5 +26,8 @@ router.post(
   authMiddleware(Role.ADMIN, Role.DOCTOR, Role.PATIENT, Role.SUPER_ADMIN),
   authController.logOut,
 );
+router.post("/email-verify", authController.emailVerification);
+router.post("/forgot-password", authController.forgotPassword);
+router.post("/reset-password", authController.resetPassword);
 
 export const authRoute = router;

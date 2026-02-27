@@ -129,6 +129,33 @@ const logOut = catchFn(async (req: Request, res: Response) => {
   });
 });
 
+const emailVerification = catchFn(async (req: Request, res: Response) => {
+  const { email, otp } = req.body;
+  await authService.emailVerification(email, otp);
+  res.status(StatusCodes.CREATED).json({
+    success: true,
+    message: "Email Verified SuccessFul",
+  });
+});
+
+const forgotPassword = catchFn(async (req: Request, res: Response) => {
+  const { email } = req.body;
+  await authService.forgotPassword(email);
+  res.status(StatusCodes.CREATED).json({
+    success: true,
+    message: "Forgot password SuccessFul",
+  });
+});
+
+const resetPassword = catchFn(async (req: Request, res: Response) => {
+  const { email, otp, newPassword } = req.body;
+  await authService.resetPassword(email, otp, newPassword);
+  res.status(StatusCodes.CREATED).json({
+    success: true,
+    message: "Password Reset SuccessFul",
+  });
+});
+
 export const authController = {
   authRegister,
   authLogin,
@@ -136,4 +163,7 @@ export const authController = {
   getNewToken,
   changePassword,
   logOut,
+  emailVerification,
+  forgotPassword,
+  resetPassword,
 };

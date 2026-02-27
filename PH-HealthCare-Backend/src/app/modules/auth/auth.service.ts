@@ -235,6 +235,7 @@ const changePassword = async (payload: IChangedPass, sessionToken: string) => {
       Authorization: `Bearer ${sessionToken}`,
     }),
   });
+
   if (!session) {
     throw new Error("Invalid Session Token");
   }
@@ -282,6 +283,7 @@ const changePassword = async (payload: IChangedPass, sessionToken: string) => {
     isDeleted: session.user.isDeleted,
     emailVerified: session.user.emailVerified,
   });
+
   return {
     ...result,
     accessToken,
@@ -298,6 +300,90 @@ const logOut = async (sessionToken: string) => {
   return result;
 };
 
+const emailVerification = async (email: string, otp: string) => {
+  const user = await auth.api.verifyEmailOTP({
+    body: {
+      email,
+      otp,
+    },
+  });
+
+  if (user.user && !user.user.emailVerified) {
+    await prisma.user.update({
+      where: {
+        email,
+      },
+      data: {
+        emailVerified: true,
+      },
+    });
+  }
+};
+
+const forgotPassword = async (email: string) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (user && !user.emailVerified) {
+    throw new Error("User Not verified");
+  }
+
+  if (user?.status === UserStatus.BLOCKED) {
+    throw new Error("User has blocked");
+  }
+
+  if (user?.status === UserStatus.DELETED) {
+    throw new Error("user deleted");
+  }
+
+  await auth.api.requestPasswordResetEmailOTP({
+    body: {
+      email,
+    },
+  });
+};
+
+const resetPassword = async (
+  email: string,
+  otp: string,
+  newPassword: string,
+) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (user && !user.emailVerified) {
+    throw new Error("User Not verified");
+  }
+
+  if (user?.status === UserStatus.BLOCKED) {
+    throw new Error("User has blocked");
+  }
+
+  if (user?.isDeleted || user?.status === UserStatus.DELETED) {
+    throw new Error("user deleted");
+  }
+
+  await auth.api.resetPasswordEmailOTP({
+    body: {
+      email,
+      otp,
+      password: newPassword,
+    },
+  });
+
+  await prisma.session.deleteMany({
+    where: {
+      userId: user?.id,
+    },
+  });
+};
+
 export const authService = {
   authRegister,
   authLogin,
@@ -305,4 +391,7 @@ export const authService = {
   getNewToken,
   changePassword,
   logOut,
+  emailVerification,
+  forgotPassword,
+  resetPassword,
 };
