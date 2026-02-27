@@ -5,6 +5,8 @@ import { StatusCodes } from "http-status-codes";
 import { setCookieUtils } from "../../utils/cookiesSet";
 import AppError from "../../../errorHelper/appError";
 import { cookieUtils } from "../../utils/cookie";
+import { envConfig } from "../../config/env";
+import { auth } from "../../lib/auth";
 
 const authRegister = catchFn(async (req: Request, res: Response) => {
   const payload = req.body;
@@ -156,6 +158,63 @@ const resetPassword = catchFn(async (req: Request, res: Response) => {
   });
 });
 
+const googleLogin = catchFn(async (req: Request, res: Response) => {
+  const redirectPath = req.query.redirect || "/";
+
+  const encodedRedirect = encodeURIComponent(redirectPath as string);
+
+  const callbackURL = `${envConfig.BETTER_AUTH_URL}/api/v1/auth/google/success?redirect=${encodedRedirect}`;
+
+  res.render("googleRedirect", {
+    callbackURL,
+    betterAuthUrl: envConfig.BETTER_AUTH_URL,
+  });
+});
+
+const googleLoginSuccess = catchFn(async (req: Request, res: Response) => {
+  const redirectPath = (req.query.redirect as string) || "/";
+
+  const sessionToken = req.cookies["better-auth.session_token"];
+
+  if (!sessionToken) {
+    return res.redirect(
+      `${envConfig.BETTER_AUTH_URL}/login?error=oAuth-failed`,
+    );
+  }
+
+  const session = await auth.api.getSession({
+    headers: {
+      Cookie: `better-auth.session_auth=${sessionToken}`,
+    },
+  });
+
+  if (!session) {
+    return res.redirect(
+      `${envConfig.BETTER_AUTH_URL}/login?error=session_not_found`,
+    );
+  }
+
+  if (session && !session.user) {
+    return res.redirect(
+      `${envConfig.BETTER_AUTH_URL}/login?error=user_not_found`,
+    );
+  }
+
+  const result = await authService.googleLoginSuccess(session);
+
+  const { accessToken, refreshToken } = result;
+
+  setCookieUtils.setAccessToken(res, accessToken);
+  setCookieUtils.setRefreshToken(res, refreshToken);
+
+  const isValidRedirectPath =
+    redirectPath.startsWith("/") && !redirectPath.startsWith("//");
+
+  const finalPath = isValidRedirectPath ? redirectPath : "/";
+
+  res.redirect(`${envConfig.BETTER_AUTH_URL}${finalPath}`);
+});
+
 export const authController = {
   authRegister,
   authLogin,
@@ -166,4 +225,6 @@ export const authController = {
   emailVerification,
   forgotPassword,
   resetPassword,
+  googleLogin,
+  googleLoginSuccess,
 };
