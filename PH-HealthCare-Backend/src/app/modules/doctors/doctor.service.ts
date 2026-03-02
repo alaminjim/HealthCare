@@ -33,7 +33,7 @@ const getAllDoctor = async () => {
     },
   });
 
-  const doctor = await result.map((dc) => ({
+  const doctor = result.map((dc) => ({
     ...dc,
     specialties: dc.specialties.map((s) => s.special),
   }));

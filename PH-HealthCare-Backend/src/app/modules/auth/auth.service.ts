@@ -298,7 +298,7 @@ const logOut = async (sessionToken: string) => {
       Authentication: `Bearer ${sessionToken}`,
     }),
   });
-  return result;
+  return result
 };
 
 const emailVerification = async (email: string, otp: string) => {
