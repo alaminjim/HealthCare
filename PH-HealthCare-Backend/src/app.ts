@@ -33,7 +33,6 @@ app.use("/api/auth", toNodeHandler(auth));
 app.use(express.urlencoded({ extended: true }));
 
 app.use(express.json());
-
 app.use(cookieParser());
 
 app.use("/api/v1", indexRouter);

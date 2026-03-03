@@ -3,10 +3,13 @@ import { specialtyService } from "./specialty.service";
 import catchFn from "../../shared/catchFn";
 
 const createSpecialty = catchFn(async (req: Request, res: Response) => {
-  // const payload = req.body;
-  console.log(req.body);
-  // const result = await specialtyService.createSpecialty(payload);
-  res.status(201).json({ message: true });
+  const payload = {
+    ...req.body,
+    icon: req.file?.path,
+  };
+
+  const result = await specialtyService.createSpecialty(payload);
+  res.status(201).json({ message: true, data: result });
 });
 
 const getSpecialty = catchFn(async (req: Request, res: Response) => {
