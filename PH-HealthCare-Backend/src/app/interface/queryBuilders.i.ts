@@ -1,4 +1,5 @@
-export interface PrismaFindManyArgs {
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export interface TFindManyArgs {
   where?: Record<string, unknown>;
   include?: Record<string, unknown>;
   select?: Record<string, boolean | Record<string, unknown>>;
@@ -6,11 +7,11 @@ export interface PrismaFindManyArgs {
   skip?: number;
   take?: number;
   cursor?: Record<string, unknown>;
-  distinct?: string[] | string;
+  distinct?: string | string[];
   [key: string]: unknown;
 }
 
-export interface PrismaCountArgs {
+export interface TFindManyArgsCount {
   where?: Record<string, unknown>;
   include?: Record<string, unknown>;
   select?: Record<string, boolean | Record<string, unknown>>;
@@ -18,6 +19,60 @@ export interface PrismaCountArgs {
   skip?: number;
   take?: number;
   cursor?: Record<string, unknown>;
-  distinct?: string[] | string;
+  distinct?: string | string[];
+  [key: string]: unknown;
+}
+
+export interface ParamsFindModel {
+  findMany(args?: any): Promise<any[]>;
+  count(args?: any): Promise<number>;
+}
+
+export interface IQueryParams {
+  searchTerms?: string;
+  page?: string;
+  limit?: string;
+  sort?: string;
+  sortOrder?: string;
+  fields?: string;
+  includes?: string;
+  [key: string]: string | undefined;
+}
+
+export interface IQueryConfig {
+  searchQueryFields?: string[];
+  filterQueryFields?: string[];
+}
+
+export interface PrismaStringFilter {
+  contains?: string;
+  startsWith?: string;
+  endsWith?: string;
+  mode?: "insensitive" | "default";
+  equals?: string;
+  in?: string[];
+  notIn?: string[];
+  lt?: string;
+  lte?: string;
+  gt?: string;
+  gte?: string;
+  not?: PrismaStringFilter | string;
+}
+
+export interface PrismaNumberFilter {
+  equals?: number;
+  in?: number[];
+  notIn?: number[];
+  lt?: number;
+  lte?: number;
+  gt?: number;
+  gte?: number;
+  not?: PrismaNumberFilter | number;
+}
+
+export interface PrismaWhereConditions {
+  OR?: Record<string, unknown>[];
+  AND?: Record<string, unknown>[];
+  NOT?: Record<string, unknown>[];
   [key: string]: unknown;
 }
