@@ -265,6 +265,31 @@ export class queryBuilders<
     return this;
   }
 
+  fields(): this {
+    const fieldParams = this.queryParams.fields;
+
+    if (fieldParams && typeof fieldParams === "string") {
+      const fieldArray = fieldParams.split(",").map((field) => field.trim());
+
+      this.selectFields = {};
+
+      fieldArray?.forEach((field) => {
+        if (this.selectFields) {
+          this.selectFields[field] = true;
+        }
+      });
+
+      this.query.select = this.selectFields as Record<
+        string,
+        boolean | Record<string, unknown>
+      >;
+
+      delete this.query.include;
+    }
+
+    return this;
+  }
+
   private parseFilterValue(value: unknown): unknown {
     if (value === "true") {
       return true;
