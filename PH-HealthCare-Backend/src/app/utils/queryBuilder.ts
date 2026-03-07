@@ -125,7 +125,7 @@ export class queryBuilders<
     const queryParams = this.query.where as Record<string, unknown>;
     const queryCountParams = this.count.where as Record<string, unknown>;
 
-    Object.keys(this.queryParams).forEach((key) => {
+    Object.keys(filterParams).forEach((key) => {
       const value = filterParams[key];
 
       if (value === undefined && value === "") {
@@ -144,33 +144,51 @@ export class queryBuilders<
       if (key.includes(".")) {
         const parts = key.split(".");
 
+        if (filterQueryFields && !filterQueryFields.includes(key)) {
+          return;
+        }
+
         if (parts.length === 2) {
           const [relation, nestedFields] = parts;
 
+          if (!queryParams[relation]) {
+            queryParams[relation] = {};
+            queryCountParams[relation] = {};
+          }
+
           queryParams[relation] = {
-            [nestedFields]: value,
+            [nestedFields]: this.parseFilterValue(value),
           };
 
           queryCountParams[relation] = {
-            [nestedFields]: value,
+            [nestedFields]: this.parseFilterValue(value),
           };
+          return;
         } else if (parts.length === 3) {
           const [relations, nestedRelations, nestedFields] = parts;
 
+          if (!queryParams[relations]) {
+            queryParams[relations] = {};
+            queryCountParams[relations] = {};
+          }
+
           queryParams[relations] = {
             [nestedRelations]: {
-              [nestedFields]: value,
+              [nestedFields]: this.parseFilterValue(value),
             },
           };
 
           queryCountParams[relations] = {
             [nestedRelations]: {
-              [nestedFields]: value,
+              [nestedFields]: this.parseFilterValue(value),
             },
           };
+
+          return;
         } else {
-          queryParams[key] = value;
-          queryCountParams[key] = value;
+          queryParams[key] = this.parseFilterValue(value);
+          queryCountParams[key] = this.parseFilterValue(value);
+          return;
         }
       }
 
@@ -179,14 +197,32 @@ export class queryBuilders<
         value !== null &&
         !Array.isArray(value)
       ) {
-        queryParams[key] = this.parseFilterValue(value);
-        queryCountParams[key] = this.parseFilterValue(value);
+        queryParams[key] = this.parseRangeFilterValue(
+          value as Record<string, number | string>,
+        );
+        queryCountParams[key] = this.parseRangeFilterValue(
+          value as Record<string, number | string>,
+        );
         return;
       }
 
       queryParams[key] = this.parseFilterValue(value);
       queryCountParams[key] = this.parseFilterValue(value);
     });
+
+    return this;
+  }
+
+  paginate(): this {
+    const page = Number(this.queryParams.page) || 1;
+    const limit = Number(this.queryParams.limit) || 10;
+
+    this.page = page;
+    this.limit = limit;
+    this.skip = (page - 1) * limit;
+
+    this.query.skip = this.skip;
+    this.query.take = this.limit;
 
     return this;
   }
