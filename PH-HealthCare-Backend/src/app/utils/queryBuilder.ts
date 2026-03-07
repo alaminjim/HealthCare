@@ -1,6 +1,7 @@
 import {
   IQueryConfig,
   IQueryParams,
+  IQueryResult,
   ParamsFindModel,
   PrismaNumberFilter,
   PrismaStringFilter,
@@ -9,7 +10,7 @@ import {
   TFindManyArgsCount,
 } from "../interface/queryBuilders.i";
 
-export class queryBuilders<
+export class QueryBuilders<
   T,
   TWhereQuery = Record<string, unknown>,
   TInclude = Record<string, unknown>,
@@ -337,6 +338,78 @@ export class queryBuilders<
     };
 
     return this;
+  }
+
+  where(condition: TWhereQuery): this {
+    this.query.where = this.deepMerge(
+      this.query.where as Record<string, unknown>,
+      condition as Record<string, unknown>,
+    );
+
+    this.count.where = this.deepMerge(
+      this.count.where as Record<string, unknown>,
+      condition as Record<string, unknown>,
+    );
+
+    return this;
+  }
+
+  async execute(): Promise<IQueryResult<T>> {
+    const [total, data] = await Promise.all([
+      this.model.count(this.count as Parameters<typeof this.model.count>[0]),
+      this.model.findMany(
+        this.query as Parameters<typeof this.model.findMany>[0],
+      ),
+    ]);
+
+    const totalPages = Math.ceil(total / this.limit);
+
+    return {
+      data: data as T[],
+      meta: {
+        page: this.page,
+        limit: this.limit,
+        total,
+        totalPages,
+      },
+    };
+  }
+
+  async getCount(): Promise<number> {
+    return await this.model.count(
+      this.count as Parameters<typeof this.model.count>[0],
+    );
+  }
+
+  getQuery(): TFindManyArgs {
+    return this.query;
+  }
+
+  private deepMerge(
+    target: Record<string, unknown>,
+    source: Record<string, unknown>,
+  ): Record<string, unknown> {
+    const result = { ...target };
+
+    for (const key in source) {
+      if (
+        source[key] &&
+        typeof source[key] === "object" &&
+        !Array.isArray(source[key])
+      ) {
+        if (result[key] && !Array.isArray(result[key])) {
+          result[key] = this.deepMerge(
+            result[key] as Record<string, unknown>,
+            source[key] as Record<string, unknown>,
+          );
+        } else {
+          result[key] = source[key];
+        }
+      } else {
+        result[key] = source[key];
+      }
+    }
+    return result;
   }
 
   private parseFilterValue(value: unknown): unknown {

@@ -1,44 +1,81 @@
-import { Prisma } from "../../../generated/prisma/client";
+import { Doctor, Prisma } from "../../../generated/prisma/client";
+import { IQueryParams } from "../../interface/queryBuilders.i";
 import { prisma } from "../../lib/prisma";
+import { QueryBuilders } from "../../utils/queryBuilder";
+import {
+  doctorFilterableFields,
+  doctorIncludeConfig,
+  doctorSearchableFields,
+} from "./doctor.constant";
 import { IUpdateDoctorPayload } from "./doctor.interface";
 
-const getAllDoctor = async () => {
-  const result = await prisma.doctor.findMany({
-    where: {
+const getAllDoctor = async (query: IQueryParams) => {
+  // const result = await prisma.doctor.findMany({
+  //   where: {
+  //     isDeleted: false,
+  //   },
+  //   orderBy: {
+  //     createdAt: "desc",
+  //   },
+  //   select: {
+  //     id: true,
+  //     name: true,
+  //     email: true,
+  //     profilePhoto: true,
+  //     contactNumber: true,
+  //     registrationNumber: true,
+  //     experience: true,
+  //     gender: true,
+  //     appointmentFee: true,
+  //     qualification: true,
+  //     currentWorkingPlace: true,
+  //     designation: true,
+  //     averageRating: true,
+  //     createdAt: true,
+  //     specialties: {
+  //       select: {
+  //         special: true,
+  //       },
+  //     },
+  //   },
+  // });
+  // const doctor = result.map((dc) => ({
+  //   ...dc,
+  //   specialties: dc.specialties.map((s) => s.special),
+  // }));
+  // return doctor;
+
+  const queryBuilder = new QueryBuilders<
+    Doctor,
+    Prisma.DoctorWhereInput,
+    Prisma.DoctorInclude
+  >(prisma.doctor, query, {
+    searchQueryFields: doctorSearchableFields,
+    filterQueryFields: doctorFilterableFields,
+  });
+
+  const result = await queryBuilder
+    .search()
+    .filter()
+    .where({
       isDeleted: false,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      profilePhoto: true,
-      contactNumber: true,
-      registrationNumber: true,
-      experience: true,
-      gender: true,
-      appointmentFee: true,
-      qualification: true,
-      currentWorkingPlace: true,
-      designation: true,
-      averageRating: true,
-      createdAt: true,
+    })
+    .include({
+      user: true,
       specialties: {
-        select: {
+        include: {
           special: true,
         },
       },
-    },
-  });
+    })
+    .dynamicInclude(doctorIncludeConfig, ["user"])
+    .paginate()
+    .sort()
+    .fields()
+    .execute();
 
-  const doctor = result.map((dc) => ({
-    ...dc,
-    specialties: dc.specialties.map((s) => s.special),
-  }));
-
-  return doctor;
+  console.log(result);
+  return result;
 };
 
 const getDoctorById = async (id: string) => {

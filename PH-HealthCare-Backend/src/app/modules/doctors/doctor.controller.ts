@@ -2,9 +2,11 @@ import { Request, Response } from "express";
 import catchFn from "../../shared/catchFn";
 import { doctorService } from "./doctor.service";
 import { StatusCodes } from "http-status-codes";
+import { IQueryParams } from "../../interface/queryBuilders.i";
 
 const getAllDoctor = catchFn(async (req: Request, res: Response) => {
-  const result = await doctorService.getAllDoctor();
+  const query = req.query;
+  const result = await doctorService.getAllDoctor(query as IQueryParams);
   res.status(StatusCodes.OK).json({ success: true, data: result });
 });
 
