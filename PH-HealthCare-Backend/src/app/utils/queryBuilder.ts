@@ -227,6 +227,44 @@ export class queryBuilders<
     return this;
   }
 
+  sort(): this {
+    const sortBy = this.queryParams.sortBy || "createdAt";
+    const sortOrder = this.queryParams.sortOrder || "desc";
+
+    this.sortBy = sortBy;
+    this.sortOrder = sortOrder as "asc" | "desc";
+
+    if (sortBy.includes(".")) {
+      const parts = sortBy.split(".");
+
+      if (parts.length === 2) {
+        const [relations, nestedFields] = parts;
+
+        this.query.orderBy = {
+          [relations]: {
+            [nestedFields]: sortOrder,
+          },
+        };
+      } else if (parts.length === 3) {
+        const [relations, nestedRelations, nestedFields] = parts;
+
+        this.query.orderBy = {
+          [relations]: {
+            [nestedRelations]: {
+              [nestedFields]: sortOrder,
+            },
+          },
+        };
+      } else {
+        this.query.orderBy = {
+          [sortBy]: sortOrder,
+        };
+      }
+    }
+
+    return this;
+  }
+
   private parseFilterValue(value: unknown): unknown {
     if (value === "true") {
       return true;

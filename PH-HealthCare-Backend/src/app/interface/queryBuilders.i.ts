@@ -32,7 +32,7 @@ export interface IQueryParams {
   searchTerms?: string;
   page?: string;
   limit?: string;
-  sort?: string;
+  sortBy?: string;
   sortOrder?: string;
   fields?: string;
   includes?: string;
