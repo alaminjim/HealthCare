@@ -17,7 +17,7 @@ export class queryBuilders<
   private query: TFindManyArgs;
   private count: TFindManyArgsCount;
   private page: number = 1;
-  private limit: number = 5;
+  private limit: number = 10;
   private skip: number = 0;
   private sortBy: string = "createdAt";
   private sortOrder: "asc" | "desc" = "desc";
