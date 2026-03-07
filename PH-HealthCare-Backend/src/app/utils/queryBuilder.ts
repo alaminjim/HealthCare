@@ -290,6 +290,55 @@ export class queryBuilders<
     return this;
   }
 
+  include(relation: TInclude): this {
+    if (this.selectFields) {
+      return this;
+    }
+
+    this.query.include = {
+      ...(this.query.include as Record<string, unknown>),
+      ...(relation as Record<string, unknown>),
+    };
+
+    return this;
+  }
+
+  dynamicInclude(
+    includeConfig: Record<string, unknown>,
+    defaultInclude: string[],
+  ): this {
+    if (this.selectFields) {
+      return this;
+    }
+
+    const result: Record<string, unknown> = {};
+
+    defaultInclude?.forEach((field) => {
+      if (includeConfig[field]) {
+        result[field] = includeConfig[field];
+      }
+    });
+
+    const including = this.queryParams.includes as string | undefined;
+
+    if (including && typeof including === "string") {
+      const requestedRelations = including.split(",").map((rel) => rel.trim());
+
+      requestedRelations.forEach((relation) => {
+        if (includeConfig[relation]) {
+          result[relation] = includeConfig[relation];
+        }
+      });
+    }
+
+    this.query.include = {
+      ...(this.query.include as Record<string, unknown>),
+      ...result,
+    };
+
+    return this;
+  }
+
   private parseFilterValue(value: unknown): unknown {
     if (value === "true") {
       return true;
