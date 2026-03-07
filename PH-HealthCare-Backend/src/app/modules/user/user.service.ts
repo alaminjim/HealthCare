@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Role, Specialty } from "../../../generated/prisma/client";
 import { auth } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
@@ -94,8 +95,9 @@ const createDoctor = async (payload: ICreateDoctorPayload) => {
       });
       return doctor;
     });
+    console.log(doctor);
     return doctor;
-  } catch (error) {
+  } catch (error: any) {
     await prisma.user.delete({
       where: {
         id: userData.user.id,

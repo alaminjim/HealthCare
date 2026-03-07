@@ -13,7 +13,6 @@ const route = Router();
 
 route.post(
   "/create-doctor",
-  authMiddleware(Role.ADMIN, Role.SUPER_ADMIN, Role.DOCTOR),
   zodValidation(createDoctorZodSchema),
   userController.createDoctor,
 );

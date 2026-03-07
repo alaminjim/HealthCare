@@ -7,7 +7,7 @@ import { DoctorValidation } from "./doctors.validation";
 
 const route = Router();
 
-route.get("/", authMiddleware(Role.PATIENT), doctorController.getAllDoctor);
+route.get("/", doctorController.getAllDoctor);
 
 route.get("/:id", doctorController.getDoctorById);
 

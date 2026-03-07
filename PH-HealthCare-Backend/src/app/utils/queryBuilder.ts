@@ -22,17 +22,16 @@ export class QueryBuilders<
   private skip: number = 0;
   private sortBy: string = "createdAt";
   private sortOrder: "asc" | "desc" = "desc";
-  private selectFields: Record<string, unknown | undefined>;
+  private selectFields: Record<string, boolean> | undefined;
 
   constructor(
     private model: ParamsFindModel,
     private queryParams: IQueryParams,
-    private config: IQueryConfig,
+    private config: IQueryConfig = {},
   ) {
     this.query = {
       where: {},
       include: {},
-      select: {},
       orderBy: {},
       skip: 0,
       take: 10,
@@ -112,7 +111,7 @@ export class QueryBuilders<
       "sortBy",
       "sortOrder",
       "fields",
-      "includes",
+      "include",
     ];
 
     const filterParams: Record<string, unknown> = {};
@@ -129,43 +128,44 @@ export class QueryBuilders<
     Object.keys(filterParams).forEach((key) => {
       const value = filterParams[key];
 
-      if (value === undefined && value === "") {
-        return;
-      }
+      // ১. value check আগে
+      if (value === undefined || value === "") return; // ✅ || দাও
 
+      // ২. isAllowed check আগে
       const isAllowed =
         !filterQueryFields ||
         filterQueryFields.length === 0 ||
         filterQueryFields.includes(key);
 
-      if (!isAllowed) {
-        return;
-      }
+      if (!isAllowed) return; // ✅ আগে check করো
 
+      // ৩. nested check
       if (key.includes(".")) {
         const parts = key.split(".");
 
-        if (filterQueryFields && !filterQueryFields.includes(key)) {
-          return;
-        }
-
         if (parts.length === 2) {
-          const [relation, nestedFields] = parts;
+          const [relation, nestedField] = parts;
 
           if (!queryParams[relation]) {
             queryParams[relation] = {};
             queryCountParams[relation] = {};
           }
 
-          queryParams[relation] = {
-            [nestedFields]: this.parseFilterValue(value),
-          };
+          const queryRelation = queryParams[relation] as Record<
+            string,
+            unknown
+          >;
+          const countRelation = queryCountParams[relation] as Record<
+            string,
+            unknown
+          >;
 
-          queryCountParams[relation] = {
-            [nestedFields]: this.parseFilterValue(value),
-          };
+          queryRelation[nestedField] = this.parseFilterValue(value);
+          countRelation[nestedField] = this.parseFilterValue(value);
           return;
-        } else if (parts.length === 3) {
+        }
+
+        if (parts.length === 3) {
           const [relations, nestedRelations, nestedFields] = parts;
 
           if (!queryParams[relations]) {
@@ -173,26 +173,40 @@ export class QueryBuilders<
             queryCountParams[relations] = {};
           }
 
-          queryParams[relations] = {
-            [nestedRelations]: {
-              [nestedFields]: this.parseFilterValue(value),
-            },
-          };
+          const queryRelations = queryParams[relations] as Record<
+            string,
+            unknown
+          >;
+          const queryCountRelations = queryCountParams[relations] as Record<
+            string,
+            unknown
+          >;
 
-          queryCountParams[relations] = {
-            [nestedRelations]: {
-              [nestedFields]: this.parseFilterValue(value),
-            },
-          };
+          if (!queryRelations[nestedRelations]) {
+            // ✅ ! আছে
+            queryRelations[nestedRelations] = {};
+          }
 
-          return;
-        } else {
-          queryParams[key] = this.parseFilterValue(value);
-          queryCountParams[key] = this.parseFilterValue(value);
+          if (!queryCountRelations[nestedRelations]) {
+            // ✅ ! আছে
+            queryCountRelations[nestedRelations] = {};
+          }
+
+          const queryNestedRelation = queryRelations[nestedRelations] as Record<
+            string,
+            unknown
+          >;
+          const countNestedRelation = queryCountRelations[
+            nestedRelations
+          ] as Record<string, unknown>;
+
+          queryNestedRelation[nestedFields] = this.parseFilterValue(value);
+          countNestedRelation[nestedFields] = this.parseFilterValue(value);
           return;
         }
       }
 
+      // ৪. object check
       if (
         typeof value === "object" &&
         value !== null &&
@@ -207,6 +221,7 @@ export class QueryBuilders<
         return;
       }
 
+      // ৫. simple value
       queryParams[key] = this.parseFilterValue(value);
       queryCountParams[key] = this.parseFilterValue(value);
     });
@@ -261,6 +276,10 @@ export class QueryBuilders<
           [sortBy]: sortOrder,
         };
       }
+    } else {
+      this.query.orderBy = {
+        [sortBy]: sortOrder,
+      };
     }
 
     return this;
@@ -320,7 +339,7 @@ export class QueryBuilders<
       }
     });
 
-    const including = this.queryParams.includes as string | undefined;
+    const including = this.queryParams.include as string | undefined;
 
     if (including && typeof including === "string") {
       const requestedRelations = including.split(",").map((rel) => rel.trim());
@@ -452,10 +471,13 @@ export class QueryBuilders<
         case "gte":
         case "equals":
         case "not":
+          rangeQuery[operator] = parseValue; // ✅ operatorValue → parseValue
+          break;
+
         case "contains":
         case "startsWith":
         case "endsWith":
-          rangeQuery[operator] = operatorValue;
+          rangeQuery[operator] = operatorValue; // ← string থাকবে ✅
           break;
 
         case "in":

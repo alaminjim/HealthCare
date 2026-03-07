@@ -10,7 +10,7 @@ export const zodValidation = (zodSchema: z.ZodTypeAny) => {
     const parseResult = zodSchema.safeParse(req.body);
 
     if (!parseResult.success) {
-      next(parseResult.error);
+      return next(parseResult.error);
     }
 
     req.body = parseResult.data;
