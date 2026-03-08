@@ -52,6 +52,8 @@ export class QueryBuilders<
           if (field.includes(".")) {
             const parts = field.split(".");
 
+            // specialties.special.title
+
             if (parts.length === 2) {
               const [relations, nestedFields] = parts;
 
@@ -128,18 +130,15 @@ export class QueryBuilders<
     Object.keys(filterParams).forEach((key) => {
       const value = filterParams[key];
 
-      // ১. value check আগে
-      if (value === undefined || value === "") return; // ✅ || দাও
+      if (value === undefined || value === "") return;
 
-      // ২. isAllowed check আগে
       const isAllowed =
         !filterQueryFields ||
         filterQueryFields.length === 0 ||
         filterQueryFields.includes(key);
 
-      if (!isAllowed) return; // ✅ আগে check করো
+      if (!isAllowed) return;
 
-      // ৩. nested check
       if (key.includes(".")) {
         const parts = key.split(".");
 
@@ -164,49 +163,8 @@ export class QueryBuilders<
           countRelation[nestedField] = this.parseFilterValue(value);
           return;
         }
-
-        if (parts.length === 3) {
-          const [relations, nestedRelations, nestedFields] = parts;
-
-          if (!queryParams[relations]) {
-            queryParams[relations] = {};
-            queryCountParams[relations] = {};
-          }
-
-          const queryRelations = queryParams[relations] as Record<
-            string,
-            unknown
-          >;
-          const queryCountRelations = queryCountParams[relations] as Record<
-            string,
-            unknown
-          >;
-
-          if (!queryRelations[nestedRelations]) {
-            // ✅ ! আছে
-            queryRelations[nestedRelations] = {};
-          }
-
-          if (!queryCountRelations[nestedRelations]) {
-            // ✅ ! আছে
-            queryCountRelations[nestedRelations] = {};
-          }
-
-          const queryNestedRelation = queryRelations[nestedRelations] as Record<
-            string,
-            unknown
-          >;
-          const countNestedRelation = queryCountRelations[
-            nestedRelations
-          ] as Record<string, unknown>;
-
-          queryNestedRelation[nestedFields] = this.parseFilterValue(value);
-          countNestedRelation[nestedFields] = this.parseFilterValue(value);
-          return;
-        }
       }
 
-      // ৪. object check
       if (
         typeof value === "object" &&
         value !== null &&
@@ -221,7 +179,6 @@ export class QueryBuilders<
         return;
       }
 
-      // ৫. simple value
       queryParams[key] = this.parseFilterValue(value);
       queryCountParams[key] = this.parseFilterValue(value);
     });
@@ -471,13 +428,13 @@ export class QueryBuilders<
         case "gte":
         case "equals":
         case "not":
-          rangeQuery[operator] = parseValue; // ✅ operatorValue → parseValue
+          rangeQuery[operator] = parseValue;
           break;
 
         case "contains":
         case "startsWith":
         case "endsWith":
-          rangeQuery[operator] = operatorValue; // ← string থাকবে ✅
+          rangeQuery[operator] = operatorValue;
           break;
 
         case "in":
