@@ -7,7 +7,6 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node dist/server.js",
     "build": "tsc",
     "dev": "tsx watch src/server.ts",
@@ -17,7 +16,9 @@
     "generate": "prisma generate",
     "push": "prisma db push",
     "pull": "prisma db pull",
-    "studio": "prisma studio"
+    "studio": "prisma studio",
+    "stripe": "stripe listen --forward-to localhost:5000/webhook",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.4.0",
@@ -41,6 +42,7 @@
     "nodemailer": "^8.0.1",
     "pg": "^8.18.0",
     "qs": "^6.15.0",
+    "stripe": "^20.4.1",
     "zod": "^4.3.6"
   },
   "devDependencies": {
