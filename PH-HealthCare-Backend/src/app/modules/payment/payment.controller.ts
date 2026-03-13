@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response } from "express";
-
 import { PaymentService } from "./payment.service";
 import catchFn from "../../shared/catchFn";
 import { envConfig } from "../../config/env";

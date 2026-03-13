@@ -5,6 +5,8 @@ import { IBookAppointmentPayload } from "./appointment.interface";
 import AppError from "../../../errorHelper/appError";
 import { StatusCodes } from "http-status-codes";
 import { AppointmentStatus, Role } from "../../../generated/prisma/enums";
+import { stripe } from "../../config/stripe.config";
+import { envConfig } from "../../config/env";
 
 const bookAppointment = async (
   payload: IBookAppointmentPayload,
@@ -61,9 +63,55 @@ const bookAppointment = async (
         isBooked: true,
       },
     });
-    return appointmentData;
+
+    const transactionId = String(uuidv7());
+
+    const paymentData = await tx.payment.create({
+      data: {
+        appointmentId: appointmentData.id,
+        amount: doctorData.appointmentFee,
+        transactionId,
+      },
+    });
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "payment",
+      line_items: [
+        {
+          price_data: {
+            currency: "bdt",
+            product_data: {
+              name: `Appointment with Dr. ${doctorData.name}`,
+            },
+            unit_amount: doctorData.appointmentFee * 100,
+          },
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        appointmentId: appointmentData.id,
+        paymentId: paymentData.id,
+      },
+
+      success_url: `${envConfig.FRONTEND_URL}/dashboard/payment/payment-success`,
+
+      // cancel_url: `${envVars.FRONTEND_URL}/dashboard/payment/payment-failed`,
+      cancel_url: `${envConfig.FRONTEND_URL}/dashboard/appointments`,
+    });
+
+    return {
+      appointmentData,
+      paymentData,
+      paymentUrl: session.url,
+    };
   });
-  return result;
+
+  return {
+    appointment: result.appointmentData,
+    payment: result.paymentData,
+    paymentUrl: result.paymentUrl,
+  };
 };
 
 const getMyAppointments = async (user: IRequestUser) => {
@@ -212,6 +260,8 @@ const getAllAppointments = async () => {
   });
   return appointments;
 };
+
+
 
 export const AppointmentService = {
   bookAppointment,
