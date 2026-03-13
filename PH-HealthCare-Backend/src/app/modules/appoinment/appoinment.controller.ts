@@ -78,10 +78,10 @@ const bookAppointmentWithPayLater = catchFn(
       payload,
       user,
     );
-    sendResponse(res, {
+    res.json({
       success: true,
       httpStatusCode: StatusCodes.CREATED,
-      message: "Appointment booked successfully with Pay Later option",
+      message: "Appointment retrieved successfully",
       data: appointment,
     });
   },
@@ -95,10 +95,10 @@ const initiatePayment = catchFn(async (req: Request, res: Response) => {
     user,
   );
 
-  sendResponse(res, {
+  res.json({
     success: true,
-    httpStatusCode: StatusCodes.OK,
-    message: "Payment initiated successfully",
+    httpStatusCode: StatusCodes.CREATED,
+    message: "Appointment retrieved successfully",
     data: paymentInfo,
   });
 });
