@@ -400,8 +400,7 @@ export const ModelName = {
   Schedule: 'Schedule',
   DoctorSchedules: 'DoctorSchedules',
   Specialty: 'Specialty',
-  DoctorSpecialty: 'DoctorSpecialty',
-  SuperAdmin: 'SuperAdmin'
+  DoctorSpecialty: 'DoctorSpecialty'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -417,7 +416,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "admin" | "appointment" | "user" | "session" | "account" | "verification" | "doctor" | "medicalReport" | "patient" | "patientHealthData" | "payment" | "prescription" | "review" | "schedule" | "doctorSchedules" | "specialty" | "doctorSpecialty" | "superAdmin"
+    modelProps: "admin" | "appointment" | "user" | "session" | "account" | "verification" | "doctor" | "medicalReport" | "patient" | "patientHealthData" | "payment" | "prescription" | "review" | "schedule" | "doctorSchedules" | "specialty" | "doctorSpecialty"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1679,80 +1678,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
-    SuperAdmin: {
-      payload: Prisma.$SuperAdminPayload<ExtArgs>
-      fields: Prisma.SuperAdminFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.SuperAdminFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SuperAdminPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.SuperAdminFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SuperAdminPayload>
-        }
-        findFirst: {
-          args: Prisma.SuperAdminFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SuperAdminPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.SuperAdminFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SuperAdminPayload>
-        }
-        findMany: {
-          args: Prisma.SuperAdminFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SuperAdminPayload>[]
-        }
-        create: {
-          args: Prisma.SuperAdminCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SuperAdminPayload>
-        }
-        createMany: {
-          args: Prisma.SuperAdminCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.SuperAdminCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SuperAdminPayload>[]
-        }
-        delete: {
-          args: Prisma.SuperAdminDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SuperAdminPayload>
-        }
-        update: {
-          args: Prisma.SuperAdminUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SuperAdminPayload>
-        }
-        deleteMany: {
-          args: Prisma.SuperAdminDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.SuperAdminUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.SuperAdminUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SuperAdminPayload>[]
-        }
-        upsert: {
-          args: Prisma.SuperAdminUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SuperAdminPayload>
-        }
-        aggregate: {
-          args: Prisma.SuperAdminAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateSuperAdmin>
-        }
-        groupBy: {
-          args: Prisma.SuperAdminGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.SuperAdminGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.SuperAdminCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.SuperAdminCountAggregateOutputType> | number
-        }
-      }
-    }
   }
 } & {
   other: {
@@ -1797,13 +1722,11 @@ export const AdminScalarFieldEnum = {
   name: 'name',
   email: 'email',
   profilePhoto: 'profilePhoto',
-  description: 'description',
   contactNumber: 'contactNumber',
-  role: 'role',
   isDeleted: 'isDeleted',
-  deletedAt: 'deletedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt',
   userId: 'userId'
 } as const
 
@@ -2058,24 +1981,6 @@ export const DoctorSpecialtyScalarFieldEnum = {
 export type DoctorSpecialtyScalarFieldEnum = (typeof DoctorSpecialtyScalarFieldEnum)[keyof typeof DoctorSpecialtyScalarFieldEnum]
 
 
-export const SuperAdminScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  email: 'email',
-  profilePhoto: 'profilePhoto',
-  description: 'description',
-  contactNumber: 'contactNumber',
-  role: 'role',
-  isDeleted: 'isDeleted',
-  deletedAt: 'deletedAt',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  userId: 'userId'
-} as const
-
-export type SuperAdminScalarFieldEnum = (typeof SuperAdminScalarFieldEnum)[keyof typeof SuperAdminScalarFieldEnum]
-
-
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -2138,20 +2043,6 @@ export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMod
 
 
 /**
- * Reference to a field of type 'Role'
- */
-export type EnumRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Role'>
-    
-
-
-/**
- * Reference to a field of type 'Role[]'
- */
-export type ListEnumRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Role[]'>
-    
-
-
-/**
  * Reference to a field of type 'Boolean'
  */
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
@@ -2197,6 +2088,20 @@ export type EnumPaymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
  * Reference to a field of type 'PaymentStatus[]'
  */
 export type ListEnumPaymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Role'
+ */
+export type EnumRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Role'>
+    
+
+
+/**
+ * Reference to a field of type 'Role[]'
+ */
+export type ListEnumRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Role[]'>
     
 
 
@@ -2395,7 +2300,6 @@ export type GlobalOmitConfig = {
   doctorSchedules?: Prisma.DoctorSchedulesOmit
   specialty?: Prisma.SpecialtyOmit
   doctorSpecialty?: Prisma.DoctorSpecialtyOmit
-  superAdmin?: Prisma.SuperAdminOmit
 }
 
 /* Types for Logging */
